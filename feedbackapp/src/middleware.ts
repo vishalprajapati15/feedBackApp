@@ -5,7 +5,7 @@ export default async function proxy(request: NextRequest) {
     const token = await getToken({ req: request });
     const url = request.nextUrl;
 
-    // Redirect authenticated users away from auth pages to dashboard
+    // Redirect authenticated users away from auth pages to dashboard page
     if (token &&
         (
             url.pathname.startsWith('/sign-in') ||
@@ -17,7 +17,7 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
-    // Redirect unauthenticated users trying to access dashboard to sign-in
+    // Redirect unauthenticated users trying to access dashboard to sign-in page
     if (!token && url.pathname.startsWith('/dashboard')) {
         return NextResponse.redirect(new URL('/sign-in', request.url));
     }
