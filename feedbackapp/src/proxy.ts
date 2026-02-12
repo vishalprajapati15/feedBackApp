@@ -1,24 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-export { default } from "next-auth/middleware";
 import { getToken } from "next-auth/jwt";
 
-
-export async function middleware(request: NextRequest) {
-
+export default async function proxy(request: NextRequest) {
     const token = await getToken({ req: request });
     const url = request.nextUrl;
+
+    // Redirect authenticated users away from auth pages to dashboard
     if (token &&
         (
             url.pathname.startsWith('/sign-in') ||
             url.pathname.startsWith('/sign-up') ||
             url.pathname.startsWith('/verify') ||
-            url.pathname.startsWith('/')
+            url.pathname === '/'
         )
     ) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
-    return NextResponse.redirect(new URL('/home', request.url));
+    // Redirect unauthenticated users trying to access dashboard to sign-in
+    if (!token && url.pathname.startsWith('/dashboard')) {
+        return NextResponse.redirect(new URL('/sign-in', request.url));
+    }
+
+    return NextResponse.next();
 }
 
 export const config = {
